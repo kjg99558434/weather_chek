@@ -5,11 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>써밋클라비온현장 안전 공지</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>body { background-color: #f3f4f6; font-family: 'Pretendard', sans-serif; }</style>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-6">
-        <h1 class="text-xl font-bold text-center">써밋클라비온현장</h1>
-        <div id="status" class="mt-4 p-4 text-center text-sm text-gray-600">데이터 로딩 중...</div>
+<body class="flex justify-center min-h-screen p-4">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
+        <div class="bg-blue-900 text-white p-5 text-center">
+            <h1 class="text-2xl font-extrabold tracking-tight">써밋클라비온현장</h1>
+            <p class="text-blue-200 mt-1 text-sm font-medium">일일 체감온도 공지</p>
+            <div class="mt-3 inline-block bg-blue-800 rounded-full px-4 py-1 text-sm font-bold" id="today-date"></div>
+        </div>
+
+        <div class="p-5 space-y-6">
+            <section>
+                <h2 class="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-3">
+                    <i class="fa-solid fa-cloud-sun text-blue-500 mr-2"></i>시간별 기상 예보 (07시~17시)
+                </h2>
+                <div id="weather-container" class="grid grid-cols-3 gap-2">
+                    <div class="col-span-3 text-center text-gray-500 py-4">데이터 분석 중...</div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-3">
+                    <i class="fa-solid fa-triangle-exclamation text-orange-500 mr-2"></i>온열질환 위험단계
+                </h2>
+                <div id="risk-card" class="bg-gray-100 rounded-xl p-4 text-center border-l-4 border-gray-400 shadow-sm">
+                    <p class="text-sm text-gray-600 mb-1">기상청 기준 예상 최고 체감온도</p>
+                    <p class="text-3xl font-bold text-gray-800 mb-2" id="max-temp">--℃</p>
+                    <div class="inline-block px-3 py-1 rounded text-white font-bold bg-gray-400 mb-3" id="risk-badge">분석 대기중</div>
+                    <p class="text-sm font-medium text-gray-700 bg-white p-2 rounded" id="risk-guide">데이터를 불러오는 중입니다.</p>
+                </div>
+            </section>
+        </div>
     </div>
 
     <script>
@@ -17,30 +45,75 @@
         const nx = 59;
         const ny = 125;
         
+        const now = new Date();
+        document.getElementById('today-date').innerText = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
+
         async function fetchWeather() {
-            const now = new Date();
             let baseDate = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0');
-            
-            // API 주소 구성
-            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${API_KEY}&pageNo=1&numOfRows=100&dataType=JSON&base_date=${baseDate}&base_time=0500&nx=${nx}&ny=${ny}`;
-            
-            // [확인용] 콘솔에 주소 출력
-            console.log("=== 호출하는 URL ===");
-            console.log(url);
+            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${API_KEY}&pageNo=1&numOfRows=300&dataType=JSON&base_date=${baseDate}&base_time=0500&nx=${nx}&ny=${ny}`;
             
             try {
                 const response = await fetch(url);
-                const text = await response.text();
-                
-                if (text.includes("Unauthorized")) {
-                    document.getElementById('status').innerHTML = `<span class="text-red-500 font-bold">인증 실패 (Unauthorized)<br>콘솔창(F12)의 URL을 확인해보세요.</span>`;
-                } else {
-                    const data = JSON.parse(text);
-                    document.getElementById('status').innerText = "데이터 성공적으로 수신!";
-                    console.log("데이터 수신 성공:", data);
-                }
+                const data = await response.json();
+                const items = data.response.body.items.item;
+                const weatherData = {};
+
+                items.forEach(item => {
+                    if (item.fcstDate === baseDate) {
+                        const time = item.fcstTime.substring(0, 2);
+                        if (time >= "07" && time <= "17") {
+                            if (!weatherData[time]) weatherData[time] = {};
+                            if (item.category === 'TMP') weatherData[time].temp = parseFloat(item.fcstValue);
+                            if (item.category === 'REH') weatherData[time].humidity = parseFloat(item.fcstValue);
+                        }
+                    }
+                });
+
+                const container = document.getElementById('weather-container');
+                container.innerHTML = '';
+                let maxFeelsLike = -99;
+
+                Object.keys(weatherData).sort().forEach(time => {
+                    const temp = weatherData[time].temp;
+                    const hum = weatherData[time].humidity;
+                    let feelsLike = temp >= 33 ? Math.round((temp + (hum - 50) * 0.05) * 10) / 10 : temp;
+                    if (feelsLike > maxFeelsLike) maxFeelsLike = feelsLike;
+
+                    container.innerHTML += `
+                        <div class="bg-blue-50 rounded-lg p-2 text-center border border-blue-100 shadow-sm">
+                            <p class="text-[11px] font-bold text-blue-800">${time}시</p>
+                            <p class="text-base font-extrabold text-gray-800 my-0.5">${temp}℃</p>
+                            <p class="text-[10px] text-gray-500 font-medium">습도 ${hum}%</p>
+                        </div>
+                    `;
+                });
+                updateRiskLevel(maxFeelsLike);
             } catch (err) {
-                document.getElementById('status').innerText = "에러: " + err.message;
+                document.getElementById('weather-container').innerHTML = `<p class="col-span-3 text-red-500 text-sm">데이터 처리 오류</p>`;
+            }
+        }
+
+        function updateRiskLevel(maxTemp) {
+            document.getElementById('max-temp').innerText = `${maxTemp}℃`;
+            const card = document.getElementById('risk-card');
+            const badge = document.getElementById('risk-badge');
+            const guide = document.getElementById('risk-guide');
+
+            if (maxTemp >= 35) {
+                card.className = "bg-red-50 rounded-xl p-4 text-center border-l-4 border-red-500 shadow-sm";
+                badge.className = "inline-block px-3 py-1 rounded text-white font-bold bg-red-600 mb-3";
+                badge.innerText = "🔴 경고 (35℃ 이상)";
+                guide.innerText = "무더위 시간대 옥외작업 중지 및 휴식";
+            } else if (maxTemp >= 33) {
+                card.className = "bg-yellow-50 rounded-xl p-4 text-center border-l-4 border-yellow-400 shadow-sm";
+                badge.className = "inline-block px-3 py-1 rounded text-gray-800 font-bold bg-yellow-400 mb-3";
+                badge.innerText = "🟡 주의 (33℃ 이상)";
+                guide.innerText = "무더위 시간대 옥외작업 단축 및 휴식";
+            } else {
+                card.className = "bg-green-50 rounded-xl p-4 text-center border-l-4 border-green-500 shadow-sm";
+                badge.className = "inline-block px-3 py-1 rounded text-white font-bold bg-green-500 mb-3";
+                badge.innerText = "🟢 관심";
+                guide.innerText = "물, 그늘, 휴식 제공 및 건강 확인";
             }
         }
         fetchWeather();
