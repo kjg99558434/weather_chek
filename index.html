@@ -6,35 +6,64 @@
     <title>써밋클라비온현장 안전 공지</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>body { background-color: #f3f4f6; font-family: 'Pretendard', sans-serif; }</style>
+    <style>
+        body { background-color: #f8fafc; font-family: 'Pretendard', sans-serif; }
+        .summit-blue { background-color: #002b5b; } /* 써밋 브랜드 컬러 톤 */
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 4px; text-align: center; font-size: 0.8rem; }
+        th { background-color: #f1f5f9; color: #475569; font-weight: bold; }
+    </style>
 </head>
 <body class="flex justify-center min-h-screen p-4">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col">
-        <div class="bg-blue-900 text-white p-5 text-center">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden flex flex-col">
+        <!-- 헤더 -->
+        <div class="summit-blue text-white p-6 text-center">
             <h1 class="text-2xl font-extrabold tracking-tight">써밋클라비온현장</h1>
             <p class="text-blue-200 mt-1 text-sm font-medium">일일 체감온도 공지</p>
-            <div class="mt-3 inline-block bg-blue-800 rounded-full px-4 py-1 text-sm font-bold" id="today-date"></div>
+            <div class="mt-4 bg-white/10 rounded-full py-1 px-4 inline-block text-sm font-bold" id="today-date"></div>
         </div>
 
-        <div class="p-5 space-y-6">
+        <div class="p-4 space-y-6">
+            <!-- 1. 시간별 기상 예보 (image_1a3089.png 형태의 표) -->
             <section>
-                <h2 class="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-3">
-                    <i class="fa-solid fa-cloud-sun text-blue-500 mr-2"></i>시간별 기상 예보 (07시~17시)
+                <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fa-solid fa-table-cells text-blue-800 mr-2"></i>시간별 기상 정보
                 </h2>
-                <div id="weather-container" class="grid grid-cols-3 gap-2">
-                    <div class="col-span-3 text-center text-gray-500 py-4">데이터 분석 중...</div>
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr id="table-head"><th>시각</th></tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr id="row-temp"><td>기온(℃)</td></tr>
+                            <tr id="row-hum"><td>습도(%)</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
+            <!-- 2. 온열질환 위험단계 -->
             <section>
-                <h2 class="text-lg font-bold text-gray-800 border-b-2 border-gray-200 pb-2 mb-3">
-                    <i class="fa-solid fa-triangle-exclamation text-orange-500 mr-2"></i>온열질환 위험단계
+                <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fa-solid fa-triangle-exclamation text-orange-600 mr-2"></i>온열질환 위험단계
                 </h2>
-                <div id="risk-card" class="bg-gray-100 rounded-xl p-4 text-center border-l-4 border-gray-400 shadow-sm">
-                    <p class="text-sm text-gray-600 mb-1">기상청 기준 예상 최고 체감온도</p>
-                    <p class="text-3xl font-bold text-gray-800 mb-2" id="max-temp">--℃</p>
-                    <div class="inline-block px-3 py-1 rounded text-white font-bold bg-gray-400 mb-3" id="risk-badge">분석 대기중</div>
-                    <p class="text-sm font-medium text-gray-700 bg-white p-2 rounded" id="risk-guide">데이터를 불러오는 중입니다.</p>
+                <div id="risk-card" class="bg-gray-50 rounded-lg p-4 text-center border-l-4 border-gray-400 shadow-sm">
+                    <p class="text-xs text-gray-500 mb-1">기상청 기준 예상 최고 체감온도</p>
+                    <p class="text-3xl font-black text-gray-800 mb-2" id="max-temp">--℃</p>
+                    <div id="risk-badge" class="inline-block px-3 py-1 rounded text-white font-bold text-sm mb-3 bg-gray-500">분석중</div>
+                    <p id="risk-guide" class="text-xs font-medium text-gray-600 bg-white p-2 rounded border border-gray-100">데이터를 불러오는 중...</p>
+                </div>
+            </section>
+
+            <!-- 3. 건강상태 확인 안내 (복구 완료) -->
+            <section>
+                <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fa-solid fa-heart-pulse text-red-600 mr-2"></i>건강상태 확인 안내
+                </h2>
+                <div class="bg-red-50 p-3 rounded-lg text-xs text-gray-700 leading-relaxed border border-red-100">
+                    <p class="mb-2"><strong>① TBM 시 필수 확인:</strong> 고령자, 기저질환자 등 온열질환 민감군 사전 건강상태 파악</p>
+                    <p class="mb-2"><strong>② 작업 중 상시 확인:</strong> 동료 작업자 간 상호 건강상태 수시 체크 (Buddy System)</p>
+                    <p><strong>③ 이상 발생 시 즉시 조치:</strong> 어지러움, 메스꺼움 등 초기 증상 발생 시 즉시 관리감독자 보고 및 그늘 휴식 실시</p>
                 </div>
             </section>
         </div>
@@ -42,9 +71,7 @@
 
     <script>
         const API_KEY = "28995c1bbe4e734196be4efa91be0792789458ffc3d89d9abf04ac9df4d5abdb";
-        const nx = 59;
-        const ny = 125;
-        
+        const nx = 59; const ny = 125;
         const now = new Date();
         document.getElementById('today-date').innerText = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일`;
 
@@ -63,57 +90,55 @@
                         const time = item.fcstTime.substring(0, 2);
                         if (time >= "07" && time <= "17") {
                             if (!weatherData[time]) weatherData[time] = {};
-                            if (item.category === 'TMP') weatherData[time].temp = parseFloat(item.fcstValue);
-                            if (item.category === 'REH') weatherData[time].humidity = parseFloat(item.fcstValue);
+                            if (item.category === 'TMP') weatherData[time].temp = item.fcstValue;
+                            if (item.category === 'REH') weatherData[time].hum = item.fcstValue;
                         }
                     }
                 });
 
-                const container = document.getElementById('weather-container');
-                container.innerHTML = '';
+                // 표 채우기
+                const head = document.getElementById('table-head');
+                const rowT = document.getElementById('row-temp');
+                const rowH = document.getElementById('row-hum');
                 let maxFeelsLike = -99;
 
                 Object.keys(weatherData).sort().forEach(time => {
-                    const temp = weatherData[time].temp;
-                    const hum = weatherData[time].humidity;
-                    let feelsLike = temp >= 33 ? Math.round((temp + (hum - 50) * 0.05) * 10) / 10 : temp;
-                    if (feelsLike > maxFeelsLike) maxFeelsLike = feelsLike;
-
-                    container.innerHTML += `
-                        <div class="bg-blue-50 rounded-lg p-2 text-center border border-blue-100 shadow-sm">
-                            <p class="text-[11px] font-bold text-blue-800">${time}시</p>
-                            <p class="text-base font-extrabold text-gray-800 my-0.5">${temp}℃</p>
-                            <p class="text-[10px] text-gray-500 font-medium">습도 ${hum}%</p>
-                        </div>
-                    `;
+                    head.innerHTML += `<th>${time}시</th>`;
+                    rowT.innerHTML += `<td>${weatherData[time].temp}</td>`;
+                    rowH.innerHTML += `<td>${weatherData[time].hum}</td>`;
+                    
+                    const f = parseFloat(weatherData[time].temp) >= 33 ? 
+                        parseFloat(weatherData[time].temp) + (parseFloat(weatherData[time].hum) - 50) * 0.05 : parseFloat(weatherData[time].temp);
+                    if (f > maxFeelsLike) maxFeelsLike = f.toFixed(1);
                 });
+
                 updateRiskLevel(maxFeelsLike);
             } catch (err) {
-                document.getElementById('weather-container').innerHTML = `<p class="col-span-3 text-red-500 text-sm">데이터 처리 오류</p>`;
+                console.error(err);
             }
         }
 
-        function updateRiskLevel(maxTemp) {
-            document.getElementById('max-temp').innerText = `${maxTemp}℃`;
+        function updateRiskLevel(max) {
+            document.getElementById('max-temp').innerText = `${max}℃`;
             const card = document.getElementById('risk-card');
             const badge = document.getElementById('risk-badge');
             const guide = document.getElementById('risk-guide');
 
-            if (maxTemp >= 35) {
-                card.className = "bg-red-50 rounded-xl p-4 text-center border-l-4 border-red-500 shadow-sm";
-                badge.className = "inline-block px-3 py-1 rounded text-white font-bold bg-red-600 mb-3";
+            if (max >= 35) {
+                card.className = "bg-red-50 rounded-lg p-4 text-center border-l-4 border-red-600 shadow-sm";
+                badge.className = "inline-block px-3 py-1 rounded text-white font-bold text-sm mb-3 bg-red-600";
                 badge.innerText = "🔴 경고 (35℃ 이상)";
-                guide.innerText = "무더위 시간대 옥외작업 중지 및 휴식";
-            } else if (maxTemp >= 33) {
-                card.className = "bg-yellow-50 rounded-xl p-4 text-center border-l-4 border-yellow-400 shadow-sm";
-                badge.className = "inline-block px-3 py-1 rounded text-gray-800 font-bold bg-yellow-400 mb-3";
+                guide.innerText = "무더위 시간대(14~17시) 옥외작업 중지, 매시간 15분 휴식 필수";
+            } else if (max >= 33) {
+                card.className = "bg-yellow-50 rounded-lg p-4 text-center border-l-4 border-yellow-500 shadow-sm";
+                badge.className = "inline-block px-3 py-1 rounded text-gray-800 font-bold text-sm mb-3 bg-yellow-400";
                 badge.innerText = "🟡 주의 (33℃ 이상)";
-                guide.innerText = "무더위 시간대 옥외작업 단축 및 휴식";
+                guide.innerText = "무더위 시간대 옥외작업 단축, 매시간 10분 휴식 권고";
             } else {
-                card.className = "bg-green-50 rounded-xl p-4 text-center border-l-4 border-green-500 shadow-sm";
-                badge.className = "inline-block px-3 py-1 rounded text-white font-bold bg-green-500 mb-3";
+                card.className = "bg-green-50 rounded-lg p-4 text-center border-l-4 border-green-500 shadow-sm";
+                badge.className = "inline-block px-3 py-1 rounded text-white font-bold text-sm mb-3 bg-green-500";
                 badge.innerText = "🟢 관심";
-                guide.innerText = "물, 그늘, 휴식 제공 및 건강 확인";
+                guide.innerText = "물, 그늘, 휴식 제공 및 근로자 건강상태 확인";
             }
         }
         fetchWeather();
